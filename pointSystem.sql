@@ -20,6 +20,8 @@ CREATE TABLE OneTimeTypes(
     point_type VARCHAR(20),
     one_time_type_name VARCHAR(20),
     one_time_type_description VARCHAR(140),
+    PRIMARY KEY (one_time_type_id),
+    FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
 );
 CREATE TABLE OneTimeOcurrences(
     one_time_id INT,
@@ -35,11 +37,13 @@ CREATE TABLE Present(
     FOREIGN KEY(one_time_id) REFERENCES OneTimeOcurrences(one_time_id),
     FOREIGN KEY(u_id) REFERENCES Users(u_id)
 );
+
 CREATE TABLE Hosted(
     one_time_id INT,
     u_id INT,
     point_type VARCHAR(20),
     PRIMARY KEY(one_time_id, u_id),
     FOREIGN KEY(one_time_id) REFERENCES OneTimeOcurrences(one_time_id),
-    FOREIGN KEY(u_id) REFERENCES Users(u_id)    
+    FOREIGN KEY(u_id) REFERENCES Users(u_id),
+    FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
 )
