@@ -1,5 +1,16 @@
 
+
+
 SET sql_mode = STRICT_ALL_TABLES;
+
+DROP TABLE IF EXISTS Hosted;
+DROP TABLE IF EXISTS Present;
+DROP TABLE IF EXISTS MultiOccurences;
+DROP TABLE IF EXISTS OneTimeOcurrences;
+DROP TABLE IF EXISTS OneTimeTypes;
+DROP TABLE IF EXISTS MultiType;
+DROP TABLE IF EXISTS PointValues;
+DROP TABLE IF EXISTS Users;
 
 CREATE TABLE Users (
     u_id INT,
@@ -61,8 +72,8 @@ CREATE TABLE MultiOccurences(
     multi_type_name VARCHAR(20),
     multi_date DATE,
     u_id INT,
-    multi_description,
-    multi_amount,
+    multi_description VARCHAR(140),
+    multi_amount INT,
     PRIMARY KEY (multi_id),
     FOREIGN KEY(u_id) REFERENCES Users(u_id),
     FOREIGN KEY(multi_type_name) REFERENCES MultiType(multi_type_name)
