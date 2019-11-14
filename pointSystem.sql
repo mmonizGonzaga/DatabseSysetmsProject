@@ -1,6 +1,4 @@
 
-
-
 SET sql_mode = STRICT_ALL_TABLES;
 
 DROP TABLE IF EXISTS Hosted;
@@ -78,4 +76,18 @@ CREATE TABLE MultiOccurences(
     FOREIGN KEY(u_id) REFERENCES Users(u_id),
     FOREIGN KEY(multi_type_name) REFERENCES MultiType(multi_type_name)
 );
+
+INSERT INTO Users VALUES(0,'Thomas', 'McDonald', 2020, FALSE, FALSE);
+INSERT INTO Users VALUES(1,'Shawn', 'Bowers', 1960, FALSE, FALSE);
+INSERT INTO Users VALUES(2,'Susan', 'Boyle', 1950, FALSE, FALSE);
+INSERT INTO Users VALUES(3,'Michael', 'Jackson', 1970, FALSE, FALSE);
+
+INSERT INTO PointValues VALUES('Weekly Meeting',2.5);
+
+INSERT INTO OneTimeTypes VALUES(0, 'Weekly Meeting' , 'Weekly Meeting', 'We meet weekly');
+
+INSERT INTO OneTimeOcurrences VALUES(0, 2019-01-01, 0);
+
+INSERT INTO Present VALUES (0,0);
+INSERT INTO Present VALUES (0,3);
 
