@@ -86,14 +86,18 @@ INSERT INTO PointValues VALUES('Weekly Meeting',2.5);
 
 INSERT INTO OneTimeTypes VALUES(0, 'Weekly Meeting' , 'Weekly Meeting', 'We meet weekly');
 
-INSERT INTO OneTimeOcurrences VALUES(0, 2019-01-01, 0);
+INSERT INTO OneTimeOcurrences VALUES(0, '2019-01-01', 0);
 
 INSERT INTO Present VALUES (0,0);
 INSERT INTO Present VALUES (0,3);
 
 SELECT u.first_name, u.last_name, SUM(p.point_value)
-FROM Users u  JOIN Present pr USING(uid)
+FROM Users u  JOIN Present pr USING(u_id)
     JOIN OneTimeOcurrences oto USING(one_time_id)
     JOIN OneTimeTypes ott USING(one_time_type_id)
     JOIN PointValues p USING(point_type)
 GROUP BY u.u_id;
+
+SELECT u.first_name, u.last_name, u.grad_year
+FROM Users u
+WHERE u.grad_year > 1960;
