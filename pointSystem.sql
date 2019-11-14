@@ -1,0 +1,45 @@
+
+SET sql_mode = STRICT_ALL_TABLES;
+
+CREATE TABLE Users (
+    u_id INT,
+    first_name VARCHAR(20),
+    last_name VARCHAR(20),
+    grad_year YEAR(4),
+    account_hold BOOLEAN,
+    active BOOLEAN,
+    PRIMARY KEY (u_id)
+);
+CREATE TABLE PointValues(
+    point_type VARCHAR(20),
+    point_value DECIMAL(4,2), -- make this have only 2 decimal digits
+    PRIMARY KEY (point_type)
+);
+CREATE TABLE OneTimeTypes(
+    one_time_type_id INT,
+    point_type VARCHAR(20),
+    one_time_type_name VARCHAR(20),
+    one_time_type_description VARCHAR(140),
+);
+CREATE TABLE OneTimeOcurrences(
+    one_time_id INT,
+    one_time_date DATE,
+    one_time_type_id INT,
+    PRIMARY KEY (one_time_id),
+    FOREIGN KEY (one_time_type_id) REFERENCES OneTimeTypes(one_time_type_id)
+);
+CREATE TABLE Present(
+    one_time_id INT,
+    u_id INT,
+    PRIMARY KEY(one_time_id, u_id),
+    FOREIGN KEY(one_time_id) REFERENCES OneTimeOcurrences(one_time_id),
+    FOREIGN KEY(u_id) REFERENCES Users(u_id)
+);
+CREATE TABLE Hosted(
+    one_time_id INT,
+    u_id INT,
+    point_type VARCHAR(20),
+    PRIMARY KEY(one_time_id, u_id),
+    FOREIGN KEY(one_time_id) REFERENCES OneTimeOcurrences(one_time_id),
+    FOREIGN KEY(u_id) REFERENCES Users(u_id)    
+)
