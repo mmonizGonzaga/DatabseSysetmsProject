@@ -57,7 +57,7 @@ CREATE TABLE Hosted(
     FOREIGN KEY(one_time_id) REFERENCES OneTimeOcurrences(one_time_id),
     FOREIGN KEY(u_id) REFERENCES Users(u_id),
     FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
-)
+);
 
 CREATE TABLE MultiType(
     multi_type_name VARCHAR(20),
@@ -65,7 +65,7 @@ CREATE TABLE MultiType(
     max_points INT,
     PRIMARY KEY (multi_type_name),
     FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
-)
+);
 
 CREATE TABLE MultiOccurences(
     multi_id INT,
