@@ -47,3 +47,24 @@ CREATE TABLE Hosted(
     FOREIGN KEY(u_id) REFERENCES Users(u_id),
     FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
 )
+
+CREATE TABLE MultiType(
+    multi_type_name VARCHAR(20),
+    point_type VARCHAR(20),
+    max_points INT,
+    PRIMARY KEY (multi_type_name),
+    FOREIGN KEY (point_type) REFERENCES PointValues(point_type)
+)
+
+CREATE TABLE MultiOccurences(
+    multi_id INT,
+    multi_type_name VARCHAR(20),
+    multi_date DATE,
+    u_id INT,
+    multi_description,
+    multi_amount,
+    PRIMARY KEY (multi_id),
+    FOREIGN KEY(u_id) REFERENCES Users(u_id),
+    FOREIGN KEY(multi_type_name) REFERENCES MultiType(multi_type_name)
+);
+
