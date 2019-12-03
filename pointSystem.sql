@@ -15,8 +15,8 @@ CREATE TABLE Users (
     first_name VARCHAR(20),
     last_name VARCHAR(20),
     grad_year YEAR(4),
-    account_hold BOOLEAN,
-    active BOOLEAN,
+    account_hold BOOLEAN DEFAULT FALSE,
+    active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (u_id)
 );
 CREATE TABLE PointValues(
