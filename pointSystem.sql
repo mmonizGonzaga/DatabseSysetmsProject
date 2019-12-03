@@ -144,6 +144,16 @@ FROM Users u  JOIN Present pr USING(u_id)
     JOIN PointValues p USING(point_type)
 GROUP BY u.u_id;
 
+-- Queries
+-- Sum Event totals for all users
+SELECT ott.one_time_type_name, oto.one_time_date, p.point_value
+FROM Users u  JOIN Present pr USING(u_id)
+    JOIN OneTimeOcurrences oto USING(one_time_id)
+    JOIN OneTimeTypes ott USING(one_time_type_id)
+    JOIN PointValues p USING(point_type)
+WHERE u.u_id = 0;
+-- GROUP BY (ott.one_time_type_name, oto.one_time_date);
+
 -- Sum multi events for all users
 -- need to implement max
 SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount)
