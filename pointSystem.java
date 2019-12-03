@@ -40,7 +40,7 @@ public class pointSystem {
             Connection con = DriverManager.getConnection(url, usr, pwd);
 
             //Global user id value
-            int currentID = 1;
+            int currentID = maxID() + 1;
 
 
             menu();
@@ -48,38 +48,45 @@ public class pointSystem {
             int inputNumber = reader.nextInt();
             while(inputNumber != 5){
                 if(inputNumber == 1){
-                    listCountries(con);
+                    listUsers(con);
                 }else if(inputNumber == 2){
-                    System.out.print("Country code................: ");
-                    String country_code = reader.next();
-                    System.out.print("Country name................: ");
-                    String country_name = reader.next();
-                    System.out.print("Country per capita gdp (USD): ");
-                    int gdp = reader.nextInt();
-                    System.out.print("Country inflation (pct).....: ");
-                    double inflation = reader.nextDouble();
+                    System.out.print("First Name................: ");
+                    String first_name = reader.next();
+                    System.out.print("Last Name.................: ");
+                    String last_name = reader.next();
+                    System.out.print("Grad Year.................: ");
+                    int grad_year = reader.nextInt();
+                   
 
-                    addCountry(con, country_code, country_name, gdp, inflation);
+                    addNewUser(con, currentID,first_name, last_name, grad_year);
 
                 }else if(inputNumber == 3){
-                    System.out.print("Number of countries to display: ");
-                    int limit = reader.nextInt();
-                    System.out.print("Minimum per capita gdp (USD)..: ");
-                    int gdp = reader.nextInt();
-                    System.out.print("Maximum inflation (pct).......: ");
-                    double inflation = reader.nextDouble();
+                    System.out.print("First Name................: ");
+                    String first_name = reader.next();
+                    System.out.print("Last Name.................: ");
+                    String last_name = reader.next();
+                    System.out.print("Grad Year.................: ");
+                    int grad_year = reader.nextInt();
+                    System.out.print("Account Hold?(Y/N):.......: ");
+                    String account_string = reader.next();
+                    System.out.print("Account Hold?(Y/N):.......: ");
+                    String active_string = reader.next();
 
-                    countryByParams(con, gdp, inflation, limit);
+
+                    boolean account_hold = false;
+                    if(account_string.equals("Y")){
+                        account_hold = true;
+                    }
+
+                    boolean active_account = true;
+                    if(active_string.equals("N")){
+                        account_hold = false;
+                    }
+
+                    updateUser(con, first_name, last_name, grad_year, account_hold, active_account);
 
                 }else if(inputNumber == 4){
-                    System.out.print("Country code................: ");
-                    String country_code = reader.next();
-                    System.out.print("Country per capita gdp (USD): ");
-                    int gdp = reader.nextInt();
-                    System.out.print("Country inflation (pct).....: ");
-                    double inflation = reader.nextDouble();
-
-                    updateCountry(con, gdp, inflation, country_code);
+                    System.out.println("HI");
 
                 }else{
                     System.out.println("Invalid input");
@@ -96,6 +103,27 @@ public class pointSystem {
             err.printStackTrace();
         }
     }
+
+    public static int maxID(){
+        try{
+            //print table of countries
+            Statement stmt = con.createStatement();
+            String q = "SELECT MAX(u_id) FROM User";
+            ResultSet rs = stmt.executeQuery(q);
+            int u_id = 0;
+            while(rs.next()){
+                u_id = rs.getString("u_id");
+            }
+
+            rs.close();
+            stmt.close();
+
+       }catch(Exception err) {
+           err.printStackTrace();
+       }
+       return u_id;
+    }
+
 
     public static boolean userExists(Connection con, String firstname, String lastname){
         try{
@@ -121,8 +149,8 @@ public class pointSystem {
         //Print out menu
         System.out.println("1. List Users");
         System.out.println("2. Add New User");
-        System.out.println("3. Find countries based on gdp and inflation");
-        System.out.println("4. Update User");
+        System.out.println("3. Update User");
+        System.out.println("4. Add Single Event");
         System.out.println("5. Exit");
         System.out.print("Enter your choice (1-5): ");
     }
