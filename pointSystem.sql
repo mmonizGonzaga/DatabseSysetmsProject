@@ -82,15 +82,58 @@ INSERT INTO Users VALUES(1,'Shawn', 'Bowers', 1960, FALSE, FALSE);
 INSERT INTO Users VALUES(2,'Susan', 'Boyle', 1950, FALSE, FALSE);
 INSERT INTO Users VALUES(3,'Michael', 'Jackson', 1970, FALSE, FALSE);
 
-INSERT INTO PointValues VALUES('Weekly Meeting',2.5);
+INSERT INTO PointValues VALUES('Informal Meeting', 2.5);
+INSERT INTO PointValues VALUES('Formal Meeting', 3.5);
+INSERT INTO PointValues VALUES('Service Hour', .25);
+INSERT INTO PointValues VALUES('Credits', .5);
+INSERT INTO PointValues VALUES('Hosted Event', 2);
 
-INSERT INTO OneTimeTypes VALUES(0, 'Weekly Meeting' , 'Weekly Meeting', 'We meet weekly');
 
+INSERT INTO OneTimeTypes VALUES(0, 'Informal Meeting' , 'Informal Meeting', 'We meet weekly');
+INSERT INTO OneTimeTypes VALUES(1, 'Formal Meeting', 'Formal Meeting', "formal meeting occasionaly");
+
+-- informal occurences
 INSERT INTO OneTimeOcurrences VALUES(0, '2019-01-01', 0);
+INSERT INTO OneTimeOcurrences VALUES(1, '2019-01-08', 0);
+INSERT INTO OneTimeOcurrences VALUES(2, '2019-01-15', 0);
+INSERT INTO OneTimeOcurrences VALUES(3, '2019-01-23', 0);
+-- formal occurences
+INSERT INTO OneTimeOcurrences VALUES(4, '2019-02-01', 1);
+INSERT INTO OneTimeOcurrences VALUES(5, '2019-01-24', 1);
 
+-- event_id, user_id
 INSERT INTO Present VALUES (0,0);
+INSERT INTO Present VALUES (0,2);
 INSERT INTO Present VALUES (0,3);
 
+INSERT INTO Present VALUES (1,0);
+INSERT INTO Present VALUES (1,2);
+INSERT INTO Present VALUES (1,1);
+
+INSERT INTO Present VALUES (2,0);
+INSERT INTO Present VALUES (2,1);
+INSERT INTO Present VALUES (2,2);
+INSERT INTO Present VALUES (2,3);
+
+INSERT INTO Present VALUES (3,0);
+INSERT INTO Present VALUES (3,1);
+
+INSERT INTO Present VALUES (4,0);
+INSERT INTO Present VALUES (4,1);
+INSERT INTO Present VALUES (4,2);
+INSERT INTO Present VALUES (4,3);
+
+-- Hosted, lets get rid of it
+
+INSERT INTO MultiType VALUES('Service', 'Service Hour', 12);
+INSERT INTO MultiType VALUES('Class Credits', 'Credits', NULL);
+
+INSERT INTO MultiOccurences VALUES(0, 'Service', '2019-01-23', 0, 'food kitchen', 3);
+INSERT INTO MultiOccurences VALUES(1, 'Service', '2019-01-23', 2, 'food kitchen', 3);
+INSERT INTO MultiOccurences VALUES(3, 'Service', '2019-01-17', 1, 'food kitchen', 4.5);
+INSERT INTO MultiOccurences VALUES(4, 'Service', '2019-01-30', 0, 'food kitchen', 10);
+
+-- Queries
 SELECT u.first_name, u.last_name, SUM(p.point_value)
 FROM Users u  JOIN Present pr USING(u_id)
     JOIN OneTimeOcurrences oto USING(one_time_id)
