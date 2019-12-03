@@ -133,13 +133,25 @@ INSERT INTO MultiOccurences VALUES(1, 'Service', '2019-01-23', 2, 'food kitchen'
 INSERT INTO MultiOccurences VALUES(3, 'Service', '2019-01-17', 1, 'food kitchen', 4.5);
 INSERT INTO MultiOccurences VALUES(4, 'Service', '2019-01-30', 0, 'food kitchen', 10);
 
+INSERT INTO MultiOccurences VALUES(5, 'Class Credits', '2019-01-30', 0, 'class bb', 2);
+
 -- Queries
+-- Sum Event totals for all users
 SELECT u.first_name, u.last_name, SUM(p.point_value)
 FROM Users u  JOIN Present pr USING(u_id)
     JOIN OneTimeOcurrences oto USING(one_time_id)
     JOIN OneTimeTypes ott USING(one_time_type_id)
     JOIN PointValues p USING(point_type)
 GROUP BY u.u_id;
+
+-- Sum multi events for all users
+-- need to implement max
+SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount)
+FROM Users u LEFT OUTER JOIN MultiOccurences mo USING(u_id)
+    LEFT OUTER JOIN MultiType mt USING(multi_type_name)
+    LEFT OUTER JOIN PointValues p USING(point_type)
+GROUP BY u.u_id;
+
 
 SELECT u.first_name, u.last_name, u.grad_year
 FROM Users u
