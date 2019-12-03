@@ -40,7 +40,7 @@ public class pointSystem {
             Connection con = DriverManager.getConnection(url, usr, pwd);
 
             //Global user id value
-            int currentID = maxID() + 1;
+            int currentID = maxID(con) + 1;
 
 
             menu();
@@ -104,24 +104,28 @@ public class pointSystem {
         }
     }
 
-    public static int maxID(){
+    public static int maxID(Connection con){
         try{
-            //print table of countries
             Statement stmt = con.createStatement();
-            String q = "SELECT MAX(u_id) FROM User";
+            String q = "SELECT MAX(u_id) AS max_id FROM Users";
             ResultSet rs = stmt.executeQuery(q);
             int u_id = 0;
+            
             while(rs.next()){
-                u_id = rs.getString("u_id");
+                u_id = rs.getInt("max_id");
             }
+        
+
+            //u_id = rs.getInt("u_id");
 
             rs.close();
             stmt.close();
+            return u_id;
 
        }catch(Exception err) {
            err.printStackTrace();
        }
-       return u_id;
+       return 0;
     }
 
 
@@ -190,12 +194,14 @@ public class pointSystem {
             if(check){
                 System.out.println(" User already exists");
             }else{
-                String q = "INSERT INTO User VALUES (?,?,?,?)";
+                String q = "INSERT INTO Users VALUES (?,?,?,?,?,?)";
                 PreparedStatement pstmt = con.prepareStatement(q);
                 pstmt.setInt(1, userID);
                 pstmt.setString(2, first_name);
                 pstmt.setString(3, last_name);
                 pstmt.setInt(4, grad_year);
+                pstmt.setBoolean(5, false);
+                pstmt.setBoolean(6,true);
                 pstmt.execute();
                 pstmt.close();
             }
@@ -216,7 +222,7 @@ public class pointSystem {
             if(!check2){
                 System.out.println("User does not exist");
             }else{
-                String q = "UPDATE User SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
+                String q = "UPDATE Users SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
                 PreparedStatement pstmt = con.prepareStatement(q);
                 pstmt.setInt(1,grad_year);
                 pstmt.setBoolean(2,account_hold);
