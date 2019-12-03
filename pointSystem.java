@@ -89,20 +89,6 @@ public class pointSystem {
                 inputNumber = reader.nextInt();
             }
 
-            /*
-            //For testing-delete China before entering it again
-            String q = "DELETE FROM Country WHERE country_name=?";
-            PreparedStatement pstmt = con.prepareStatement(q);
-            pstmt.setString(1,"China");
-            pstmt.execute();
-
-            //For testing-delete China before entering it again
-            q = "DELETE FROM Country WHERE country_name=?";
-            pstmt = con.prepareStatement(q);
-            pstmt.setString(1,"Greece");
-            pstmt.execute();
-            */
-
             reader.close();
             con.close();
             
@@ -133,10 +119,10 @@ public class pointSystem {
 
     public static void menu(){
         //Print out menu
-        System.out.println("1. List countries");
-        System.out.println("2. Add country");
+        System.out.println("1. List Users");
+        System.out.println("2. Add New User");
         System.out.println("3. Find countries based on gdp and inflation");
-        System.out.println("4. Update country's gdp and inflation");
+        System.out.println("4. Update User");
         System.out.println("5. Exit");
         System.out.print("Enter your choice (1-5): ");
     }
@@ -190,68 +176,29 @@ public class pointSystem {
             //Increment userID for next user
             userID++;
 
-
-            //listCountries(con);
-
         }catch(Exception err) {
             err.printStackTrace();
         }
     }
 
-    public static void countryByParams(Connection con, int gdp, double inflation, int limit){
+    public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
         try{
 
-            //Select countries based on gdp and inflation
-            String q = 
-            "SELECT country_name, country_code, gdp, inflation "+
-            "FROM Country " + 
-            "WHERE gdp >= ? AND inflation <= ? " +
-            "ORDER BY gdp DESC " +
-            "LIMIT ?";
-
-            PreparedStatement pstmt = con.prepareStatement(q);
-            pstmt.setInt(1,gdp);
-            pstmt.setDouble(2, inflation);
-            pstmt.setInt(3,limit);
-            ResultSet rs = pstmt.executeQuery();
-
-            while(rs.next()){
-                String country_name = rs.getString("country_name");
-                String country_code = rs.getString("country_code");
-                gdp = rs.getInt("gdp");
-                inflation = rs.getDouble("inflation");
-
-                System.out.println(country_name + " " + country_code + " " + gdp + " " + inflation);
-            }
-
-            pstmt.close();
-            rs.close();
-            System.out.println();
-            
-
-        }catch(Exception err) {
-            err.printStackTrace();
-        }
-
-    }
-
-    public static void updateCountry(Connection con, int gdp, double inflation, String country_code){
-        try{
-
-            boolean check2 = countryExists(con, country_code);
+            boolean check2 = userExists(con, first_name, last_name);
             if(!check2){
-                System.out.println("Country does not exist");
+                System.out.println("User does not exist");
             }else{
-                String q = "UPDATE Country SET gdp=?, inflation=? WHERE country_code=?";
+                String q = "UPDATE User SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
                 PreparedStatement pstmt = con.prepareStatement(q);
-                pstmt.setInt(1,gdp);
-                pstmt.setDouble(2,inflation);
-                pstmt.setString(3,country_code);
+                pstmt.setInt(1,grad_year);
+                pstmt.setBoolean(2,account_hold);
+                pstmt.setBoolean(3,active);
+                pstmt.setString(4,first_name);
+                pstmt.setString(5,last_name);
                 pstmt.execute();
                 pstmt.close();
             }
             System.out.println();
-            //listCountries(con);
             
         }catch(Exception err) {
             err.printStackTrace();
