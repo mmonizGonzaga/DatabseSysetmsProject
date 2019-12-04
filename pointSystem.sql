@@ -125,7 +125,7 @@ INSERT INTO Present VALUES (4,3);
 
 -- Hosted, lets get rid of it
 
-INSERT INTO MultiType VALUES('Service', 'Service Hour', 12);
+INSERT INTO MultiType VALUES('Service', 'Service Hour', 3);
 INSERT INTO MultiType VALUES('Class Credits', 'Credits', NULL);
 
 INSERT INTO MultiOccurences VALUES(0, 'Service', '2019-01-23', 0, 'food kitchen', 3);
@@ -144,7 +144,6 @@ FROM Users u  JOIN Present pr USING(u_id)
     JOIN PointValues p USING(point_type)
 GROUP BY u.u_id;
 
--- Queries
 -- Sum Event totals for all users
 SELECT ott.one_time_type_name, oto.one_time_date, p.point_value
 FROM Users u  JOIN Present pr USING(u_id)
@@ -154,15 +153,53 @@ FROM Users u  JOIN Present pr USING(u_id)
 WHERE u.u_id = 0;
 -- GROUP BY (ott.one_time_type_name, oto.one_time_date);
 
--- Sum multi events for all users
+-- Sum for multi events for all users
+SELECT mt.multi_type_name, mo.multi_date, p.point_value
+FROM Users u JOIN MultiOccurences mo USING(u_id)
+	JOIN MultiType mt USING(multi_type_name)
+	JOIN PointValues p USING(point_type)
+WHERE u.u_id = 0; 
+
+
 -- need to implement max
 SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount)
-FROM Users u LEFT OUTER JOIN MultiOccurences mo USING(u_id)
-    LEFT OUTER JOIN MultiType mt USING(multi_type_name)
-    LEFT OUTER JOIN PointValues p USING(point_type)
+FROM Users u JOIN MultiOccurences mo USING(u_id)
+    JOIN MultiType mt USING(multi_type_name)
+    JOIN PointValues p USING(point_type)
 GROUP BY u.u_id;
 
+-- all users and total scores
+SELECT firstName, lastName, SUM(points) AS totalPoints
+FROM
+(SELECT u.first_name as firstName, u.last_name as lastName, SUM(p.point_value) AS points
+-- Union of muti and one time events for all users. 
+FROM Users u  JOIN Present pr USING(u_id)
+    JOIN OneTimeOcurrences oto USING(one_time_id)
+    JOIN OneTimeTypes ott USING(one_time_type_id)
+    JOIN PointValues p USING(point_type)
+GROUP BY u.u_id
+UNION ALL 
+SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount) AS points
+FROM Users u JOIN MultiOccurences mo USING(u_id)
+    JOIN MultiType mt USING(multi_type_name)
+    JOIN PointValues p USING(point_type)
+GROUP BY u.u_id) as temp
+GROUP BY firstName, lastName;
+
+SELECT ott.one_time_type_name, oto.one_time_date, p.point_value
+FROM Users u  JOIN Present pr USING(u_id)
+    JOIN OneTimeOcurrences oto USING(one_time_id)
+    JOIN OneTimeTypes ott USING(one_time_type_id)
+    JOIN PointValues p USING(point_type)
+WHERE u.u_id = 0
+UNION ALL
+SELECT mt.multi_type_name, mo.multi_date, p.point_value
+FROM Users u JOIN MultiOccurences mo USING(u_id)
+	JOIN MultiType mt USING(multi_type_name)
+	JOIN PointValues p USING(point_type)
+WHERE u.u_id = 0; 
 
 SELECT u.first_name, u.last_name, u.grad_year
 FROM Users u
 WHERE u.grad_year > 1960;
+
