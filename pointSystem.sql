@@ -203,3 +203,11 @@ SELECT u.first_name, u.last_name, u.grad_year
 FROM Users u
 WHERE u.grad_year > 1960;
 
+-- use this to see all the user that are not present in an event yet 
+-- use this in the forloop for adding users (change 3 with a one_time_id)
+SELECT u_id, first_name, last_name FROM Users
+EXCEPT 
+SELECT u.u_id,u.first_name,u.last_name
+FROM Users u JOIN Present pr USING(u_id)
+WHERE pr.one_time_id = 3;
+
