@@ -284,14 +284,11 @@ public class pointSystem {
             if(check){
                 System.out.println("Event already exists");
             }else{
-                String q = "INSERT INTO Users VALUES (?,?,?)";
+                String q = "INSERT INTO MultiType VALUES (?,?,?)";
                 PreparedStatement pstmt = con.prepareStatement(q);
-                pstmt.setInt(1, userID);
-                pstmt.setString(2, first_name);
-                pstmt.setString(3, last_name);
-                pstmt.setInt(4, grad_year);
-                pstmt.setBoolean(5, false);
-                pstmt.setBoolean(6,true);
+                pstmt.setString(1, multi_type_name);
+                pstmt.setString(2, point_type);
+                pstmt.setInt(3, max_points);
                 pstmt.execute();
                 pstmt.close();
             }
@@ -301,7 +298,7 @@ public class pointSystem {
             err.printStackTrace();
         }
     }
-    }
+    
 
     
     
