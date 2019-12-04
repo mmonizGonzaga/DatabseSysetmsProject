@@ -284,7 +284,7 @@ public class pointSystem {
             if(check){
                 System.out.println("Event already exists");
             }else{
-                String q = "INSERT INTO Users VALUES (?,?,?,?,?,?)";
+                String q = "INSERT INTO Users VALUES (?,?,?)";
                 PreparedStatement pstmt = con.prepareStatement(q);
                 pstmt.setInt(1, userID);
                 pstmt.setString(2, first_name);
@@ -296,9 +296,6 @@ public class pointSystem {
                 pstmt.close();
             }
             System.out.println();
-
-            //Increment userID for next user
-            userID++;
 
         }catch(Exception err) {
             err.printStackTrace();
