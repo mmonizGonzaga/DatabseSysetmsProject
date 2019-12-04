@@ -1,10 +1,6 @@
 /*Gage Gutmann
 CPSC 321
-Homework 9
-This program connects to the individuals database in ADA and 
-works off of the CIA database used in Homeworks 6 and 7.
-It then prompts the user to make changes to the database
-or ask for specific information.
+Project
  */
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -149,6 +145,44 @@ public class pointSystem {
         return false;
     }
 
+    public static boolean multiEventExists(Connection con, String multi_type_name){
+        try{
+            String q = "SELECT * FROM MultiType WHERE multi_type_name=? ";
+            PreparedStatement pstmt = con.prepareStatement(q);
+            pstmt.setString(1,multi_type_name);
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                rs.close();//Close rs before return
+                pstmt.close();//close pstmt before return
+                return true;
+            }
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean singleEventExists(Connection con, String one_type_name){
+        try{
+            String q = "SELECT * FROM OneTimeTypes WHERE one_type_name=? ";
+            PreparedStatement pstmt = con.prepareStatement(q);
+            pstmt.setString(1,one_time_type_name);
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                rs.close();//Close rs before return
+                pstmt.close();//close pstmt before return
+                return true;
+            }
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+        return false;
+    }
+
     public static void menu(){
         //Print out menu
         System.out.println("1. List Users");
@@ -192,7 +226,7 @@ public class pointSystem {
         try{
             boolean check = userExists(con, first_name, last_name);
             if(check){
-                System.out.println(" User already exists");
+                System.out.println("User already exists");
             }else{
                 String q = "INSERT INTO Users VALUES (?,?,?,?,?,?)";
                 PreparedStatement pstmt = con.prepareStatement(q);
@@ -218,8 +252,8 @@ public class pointSystem {
     public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
         try{
 
-            boolean check2 = userExists(con, first_name, last_name);
-            if(!check2){
+            boolean check = userExists(con, first_name, last_name);
+            if(!check){
                 System.out.println("User does not exist");
             }else{
                 String q = "UPDATE Users SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
@@ -238,5 +272,40 @@ public class pointSystem {
             err.printStackTrace();
         }
     }
+
+    public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description){
+
+    }
+
+
+    public static void addRecurringEvent(Connection con, String multi_type_name, String point_type, int max_points){
+        try{
+            boolean check = multiEventExists(con, multi_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+                String q = "INSERT INTO Users VALUES (?,?,?,?,?,?)";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1, userID);
+                pstmt.setString(2, first_name);
+                pstmt.setString(3, last_name);
+                pstmt.setInt(4, grad_year);
+                pstmt.setBoolean(5, false);
+                pstmt.setBoolean(6,true);
+                pstmt.execute();
+                pstmt.close();
+            }
+            System.out.println();
+
+            //Increment userID for next user
+            userID++;
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+    }
+
+    
     
 }
