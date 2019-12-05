@@ -45,7 +45,7 @@ public class pointSystem {
             menu();
             Scanner reader = new Scanner(System.in);
             int inputNumber = reader.nextInt();
-            while(inputNumber != 5){
+            while(inputNumber != 9){
                 if(inputNumber == 1){
                     listUsers(con);
                 }else if(inputNumber == 2){
@@ -85,23 +85,95 @@ public class pointSystem {
                     updateUser(con, first_name, last_name, grad_year, account_hold, active_account);
 
                 }else if(inputNumber == 4){
-                    System.out.println("HI");
+                    System.out.println("Your point types: Informal Meeting");
+					// Note: needs to be hardcoded (for now)
+					// Unfinished, but it works
+                    String point_type = "Informal Meeting";
+					System.out.print("Event Name................: ");
+                    String one_time_type_name = reader.next();
+					System.out.print("Event Description.................: ");
+                    String one_time_type_description = reader.next();
+					System.out.print("Event Date (Stylized YYYY-MM-DD).................: ");
+                    String one_time_date = reader.next();
+					
+					//Add the event
+					addSingleEvent(con, 0, point_type, one_time_type_name, one_time_type_description, currentSingleId, one_time_date);
+					
+					//Add users to an event
+					System.out.println("\nAdd Attendees");
+					System.out.print("Enter any key to add attendees or enter q to save event (no attendees): ");
+					Scanner input = new Scanner(System.in);
+					String keepGoing = input.next();
+					 while(!keepGoing.equals("q")){
+						System.out.println("Avaliable users:");
+						try{
+							//Display the users that can be added
+							String q = "SELECT u_id, first_name, last_name FROM Users EXCEPT SELECT u.u_id,u.first_name,u.last_name FROM Users u JOIN Present pr USING(u_id) WHERE pr.one_time_id = ?";
+							PreparedStatement pstmt = con.prepareStatement(q);
+							pstmt.setInt(1,currentSingleId);
+							ResultSet rs = pstmt.executeQuery();
+ 
+							//Pretty print them
+							System.out.println("ID     First Name      Last Name");
+							while(rs.next()){
+								int u_id = rs.getInt("u_id");
+								String first_name = rs.getString("first_name");
+								String last_name = rs.getString("last_name");               
+								System.out.println(u_id + "        " + first_name + "      " + last_name);
 
-                }else if(inputNumber == 6){
-                    System.out.print("User ID...................: ");
-                    int userID = reader.nextInt();
+							}
+							System.out.println();
 
-                    displayUserBreakdown(con, userID);
+							rs.close();
+							pstmt.close();
+						}catch(Exception err) {
+							err.printStackTrace();
+						}
+						
+						//Insert user by ID
+						System.out.print("ID of the User You Want to Add................: ");
+						int u_id = reader.nextInt();
+						String q = "INSERT INTO Present VALUES (?,?);";
+						PreparedStatement pstmt = con.prepareStatement(q);
+						pstmt.setInt(1,currentSingleId);
+						pstmt.setInt(2,u_id);
+						pstmt.execute();
+						pstmt.close();
+						
+						//Asks the user if they want to keep adding or return to main screen
+						System.out.print("Enter any key to keep adding and enter q to quit adding: ");
+						keepGoing = input.next();
+					} 
+
+                }else if (inputNumber == 5){
+                    System.out.print("Event Name.............................................: ");
+                    String multi_type_name = reader.next();
+                    reader.nextLine();
+                    System.out.print("Point Type (Formal Meeting, Service Hour, Hosted Event): ");
+                    String point_type = reader.next();
+                    reader.nextLine();
+                    System.out.print("Max Points.............................................:");
+                    int max_points = reader.nextInt();
+
+                    addRecurringEvent(con, multi_type_name, point_type, max_points);
+                   
+                }else if (inputNumber == 6){
+                    addRecurringValue(con, currentMultiId);
 
                 }else if(inputNumber == 7){
+                    System.out.print("User ID...................: ");
+                    int userID = reader.nextInt();
+                    displayUserBreakdown(con, userID);
+    
+                }else if(inputNumber == 8){
                     displayPointTotals(con);
+
                 }else{
                     System.out.println("Invalid input");
                 }
 
                 menu();
                 inputNumber = reader.nextInt();
-                System.out.println();
             }
 
             reader.close();
@@ -226,7 +298,7 @@ public class pointSystem {
 
     public static boolean singleEventExists(Connection con, String one_time_name){
         try{
-            String q = "SELECT * FROM OneTimeTypes WHERE one_time_name=? ";
+            String q = "SELECT * FROM OneTimeTypes WHERE one_time_type_name=? ";
             PreparedStatement pstmt = con.prepareStatement(q);
             pstmt.setString(1,one_time_name);
             ResultSet rs = pstmt.executeQuery();
@@ -249,10 +321,10 @@ public class pointSystem {
         System.out.println("2. Add New User");
         System.out.println("3. Update User");
         System.out.println("4. Add Single Event");
-        System.out.println("5. Exit");
-        System.out.println("6. Display User Breakdown");
-        System.out.println("7. Display Point Totals");
-
+        System.out.println("5. Add New Recurring Event Type");
+        System.out.println("6. Add Recurring Event Value");
+        System.out.println("7. Display User Breakdown");
+        System.out.println("8. Display Point Totals");
         System.out.print("Enter your choice (1-5): ");
     }
 
@@ -262,7 +334,8 @@ public class pointSystem {
              Statement stmt = con.createStatement();
              String q = "SELECT * FROM Users";
              ResultSet rs = stmt.executeQuery(q);
- 
+            
+             System.out.println("ID     First Name      Last Name       Grad Year       Account Hold        Active");
              while(rs.next()){
                  int u_id = rs.getInt("u_id");
                  String first_name = rs.getString("first_name");
@@ -271,7 +344,6 @@ public class pointSystem {
                  boolean account_hold = rs.getBoolean("account_hold");
                  boolean active = rs.getBoolean("active");
 
-                 System.out.println("ID     First Name      Last Name       Grad Year       Account Hold        Active");
                  System.out.println(u_id + "        " + first_name + "      " + last_name + "       " + grad_year + "       " + account_hold + "        " + active);
 
              }
@@ -312,7 +384,168 @@ public class pointSystem {
         }
     }
 
-    public static void displayUserBreakdown(Connection con, int userID){
+    public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
+        try{
+             boolean check = userExists(con, first_name, last_name);
+
+            if(!check){
+                System.out.println("User does not exist");
+            }else{
+                String q = "UPDATE Users SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1,grad_year);
+                pstmt.setBoolean(2,account_hold);
+                pstmt.setBoolean(3,active);
+                pstmt.setString(4,first_name);
+                pstmt.setString(5,last_name);
+                pstmt.execute();
+                pstmt.close();
+            }
+            System.out.println();
+            
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+
+    public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description, int one_time_id, String one_time_date){
+			/* try{
+            boolean check = singleEventExists(con, one_time_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+                String q = "INSERT INTO OneTimeTypes VALUES (?,?,?,?)";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1, one_time_type_id);
+                pstmt.setString(2, point_type);
+                pstmt.setString(3, one_time_type_name);
+                pstmt.setString(4, one_time_type_description);
+                pstmt.execute();
+                pstmt.close();
+            }
+            System.out.println();
+            //Increment one_time_type_id for next user
+            one_time_type_id++;
+        }catch(Exception err) {
+            err.printStackTrace();
+        } */
+		
+		try{
+			boolean check = singleEventExists(con, one_time_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+            String q = "INSERT INTO OneTimeOcurrences VALUES (?,?,?)";
+            PreparedStatement pstmt = con.prepareStatement(q);
+            pstmt.setInt(1, one_time_id);
+            pstmt.setString(2, one_time_date);
+            pstmt.setInt(3, one_time_type_id);
+            pstmt.execute();
+            pstmt.close();
+            System.out.println();
+			}
+			
+
+            //Increment one_time_type_id for next user
+            one_time_type_id++;
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+
+
+    public static void addRecurringEvent(Connection con, String multi_type_name, String point_type, int max_points){
+        
+        try{
+            
+            boolean check = multiEventExists(con, multi_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+                String q = "INSERT INTO MultiType VALUES (?,?,?)";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setString(1, multi_type_name);
+                pstmt.setString(2, point_type);
+                pstmt.setInt(3, max_points);               
+                pstmt.execute();
+                pstmt.close();
+            }
+            System.out.println();
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+    
+   public static void addRecurringValue(Connection con, int multi_id){
+        try{
+
+             //print table of Reaccuring Events
+             Statement stmt = con.createStatement();
+             String q = "SELECT * FROM MultiType";
+             ResultSet rs = stmt.executeQuery(q);
+            
+             System.out.println("Event Name     Point Type      Max Points");
+             while(rs.next()){
+                 String multi_type_name_menu = rs.getString("multi_type_name");
+                 String point_type = rs.getString("point_type");
+                 int max_points = rs.getInt("max_points");
+
+                 System.out.println(multi_type_name_menu + "        " + point_type + "      " + max_points);
+
+             }
+             System.out.println();
+
+             Scanner reader = new Scanner(System.in);
+             System.out.print("Enter Event Name: ");
+             String multi_type_name = reader.nextLine();
+             System.out.println(multi_type_name);
+             
+             boolean check = multiEventExists(con, multi_type_name);
+             if(!check){
+                System.out.println("Event does not already exist");
+             }else{
+                System.out.print("Enter Date(YYYY-MM-DD): ");
+                String multi_date = reader.next();
+                System.out.println(multi_date);
+                System.out.print("Enter User Id: ");
+                int u_id = reader.nextInt();
+                System.out.println(u_id);
+                System.out.print("Enter Description: ");
+                String multi_description = reader.next();
+                System.out.println(multi_description);
+                System.out.print("Enter Point Amount: ");
+                int multi_amount = reader.nextInt();
+                System.out.println(multi_amount);
+                q = "INSERT INTO MultiOccurences VALUES (?,?,?,?,?,?)";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1, multi_id);
+                pstmt.setString(2, multi_type_name);
+                pstmt.setString(3, multi_date);
+                pstmt.setInt(4, u_id);
+                pstmt.setString(5, multi_description);   
+                pstmt.setInt(6, multi_amount);          
+                pstmt.execute();
+                pstmt.close();
+            }
+            multi_id++;
+
+
+
+
+
+
+            reader.close();
+             rs.close();
+             stmt.close();
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+   }
+
+       public static void displayUserBreakdown(Connection con, int userID){
         try{
             boolean check = true;
             if(!check){
@@ -390,61 +623,6 @@ public class pointSystem {
             err.printStackTrace();
         }
     }
-
-
-    public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
-        try{
-             boolean check = userExists(con, first_name, last_name);
-
-            if(!check){
-                System.out.println("User does not exist");
-            }else{
-                String q = "UPDATE Users SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
-                PreparedStatement pstmt = con.prepareStatement(q);
-                pstmt.setInt(1,grad_year);
-                pstmt.setBoolean(2,account_hold);
-                pstmt.setBoolean(3,active);
-                pstmt.setString(4,first_name);
-                pstmt.setString(5,last_name);
-                pstmt.execute();
-                pstmt.close();
-            }
-            System.out.println();
-            
-        }catch(Exception err) {
-            err.printStackTrace();
-        }
-    }
-
-    public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description){
-
-    }
-
-
-    public static void addRecurringEvent(Connection con, String multi_type_name, String point_type, int max_points){
-        try{
-            boolean check = multiEventExists(con, multi_type_name);
-            if(check){
-                System.out.println("Event already exists");
-            }else{
-                String q = "INSERT INTO MultiType VALUES (?,?,?)";
-                PreparedStatement pstmt = con.prepareStatement(q);
-                pstmt.setString(1, multi_type_name);
-                pstmt.setString(2, point_type);
-                pstmt.setInt(3, max_points);               
-                pstmt.execute();
-                pstmt.close();
-            }
-            System.out.println();
-
-        }catch(Exception err) {
-            err.printStackTrace();
-        }
-    }
-    
-   // public static void addRecurringValue(Connection con, ){
-
-   // }
 
     
     
