@@ -130,7 +130,7 @@ public class pointSystem {
     public static int maxSingleID(Connection con){
         try{
             Statement stmt = con.createStatement();
-            String q = "SELECT MAX(one_time_id) AS max_id FROM OneTimeOccurances";
+            String q = "SELECT MAX(one_time_id) AS max_id FROM OneTimeOcurrences";
             ResultSet rs = stmt.executeQuery(q);
             int one_time_id = 0;
             
@@ -154,7 +154,7 @@ public class pointSystem {
     public static int maxMultiID(Connection con){
         try{
             Statement stmt = con.createStatement();
-            String q = "SELECT MAX(multi_id) AS max_id FROM MultiOccurances";
+            String q = "SELECT MAX(multi_id) AS max_id FROM MultiOccurences";
             ResultSet rs = stmt.executeQuery(q);
             int multi_id = 0;
             
@@ -215,11 +215,11 @@ public class pointSystem {
         return false;
     }
 
-    public static boolean singleEventExists(Connection con, String one_type_name){
+    public static boolean singleEventExists(Connection con, String one_time_name){
         try{
-            String q = "SELECT * FROM OneTimeTypes WHERE one_type_name=? ";
+            String q = "SELECT * FROM OneTimeTypes WHERE one_time_name=? ";
             PreparedStatement pstmt = con.prepareStatement(q);
-            pstmt.setString(1,one_time_type_name);
+            pstmt.setString(1,one_time_name);
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()){
@@ -350,6 +350,9 @@ public class pointSystem {
         }
     }
     
+   // public static void addRecurringValue(Connection con, ){
+
+   // }
 
     
     
