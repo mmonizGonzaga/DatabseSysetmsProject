@@ -87,12 +87,21 @@ public class pointSystem {
                 }else if(inputNumber == 4){
                     System.out.println("HI");
 
+                }else if(inputNumber == 6){
+                    System.out.print("User ID...................: ");
+                    int userID = reader.nextInt();
+
+                    displayUserBreakdown(con, userID);
+
+                }else if(inputNumber == 7){
+                    displayPointTotals(con);
                 }else{
                     System.out.println("Invalid input");
                 }
 
                 menu();
                 inputNumber = reader.nextInt();
+                System.out.println();
             }
 
             reader.close();
@@ -241,6 +250,9 @@ public class pointSystem {
         System.out.println("3. Update User");
         System.out.println("4. Add Single Event");
         System.out.println("5. Exit");
+        System.out.println("6. Display User Breakdown");
+        System.out.println("7. Display Point Totals");
+
         System.out.print("Enter your choice (1-5): ");
     }
 
@@ -299,6 +311,86 @@ public class pointSystem {
             err.printStackTrace();
         }
     }
+
+    public static void displayUserBreakdown(Connection con, int userID){
+        try{
+            boolean check = true;
+            if(!check){
+                System.out.println("User Doesn't exists");
+            }else{
+                String q = "SELECT ott.one_time_type_name, oto.one_time_date, p.point_value "+
+                    "FROM Users u  JOIN Present pr USING(u_id) "+
+                        "JOIN OneTimeOcurrences oto USING(one_time_id) "+
+                        "JOIN OneTimeTypes ott USING(one_time_type_id) "+
+                        "JOIN PointValues p USING(point_type) "+
+                    "WHERE u.u_id = ? "+
+                    "UNION ALL "+
+                    "SELECT mt.multi_type_name, mo.multi_date, p.point_value "+
+                    "FROM Users u JOIN MultiOccurences mo USING(u_id) "+
+                        "JOIN MultiType mt USING(multi_type_name) "+
+                        "JOIN PointValues p USING(point_type) "+
+                    "WHERE u.u_id = ?";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1, userID);
+                pstmt.setInt(2, userID);   
+                ResultSet rs = pstmt.executeQuery();
+                System.out.println("Event               Date              Points");
+                while(rs.next()){
+                    String ott = rs.getString("one_time_type_name");
+                    String date = rs.getString("one_time_date");
+                    double points = rs.getDouble("point_value");
+                    System.out.println(ott + "   "+ date + "        " + points );
+
+                }
+
+
+                pstmt.close();
+            }
+            System.out.println();
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+    public static void displayPointTotals(Connection con){
+        try{
+             //print table of countries
+             Statement stmt = con.createStatement();
+             String q = "SELECT firstName, lastName, SUM(points) AS totalPoints "+
+             "FROM "+
+             "(SELECT u.first_name as firstName, u.last_name as lastName, SUM(p.point_value) AS points  "+
+             "FROM Users u  JOIN Present pr USING(u_id) "+
+                 "JOIN OneTimeOcurrences oto USING(one_time_id) "+
+                 "JOIN OneTimeTypes ott USING(one_time_type_id) "+
+                 "JOIN PointValues p USING(point_type) "+
+             "GROUP BY u.u_id "+
+             "UNION ALL  "+
+             "SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount) AS points "+
+             "FROM Users u JOIN MultiOccurences mo USING(u_id) "+
+                 "JOIN MultiType mt USING(multi_type_name) "+
+                 "JOIN PointValues p USING(point_type) "+
+             "GROUP BY u.u_id) as temp "+
+             "GROUP BY firstName, lastName;";
+             ResultSet rs = stmt.executeQuery(q);
+             System.out.println("First Name      Last Name       Points ");
+ 
+             while(rs.next()){
+                 String first_name = rs.getString("firstName");
+                 String last_name = rs.getString("lastName");
+                 double points = rs.getDouble("totalPoints");
+                 System.out.println(first_name + "          " + last_name + "         " + points);
+
+             }
+             System.out.println();
+
+             rs.close();
+             stmt.close();
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
+    }
+
 
     public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
         try{
