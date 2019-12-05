@@ -37,6 +37,8 @@ public class pointSystem {
 
             //Global user id value
             int currentID = maxID(con) + 1;
+			//int currentSingleTypeId = maxSingleTypeID(con) + 1;
+			int currentSingleId = maxSingleID(con) + 1;
 
 
             menu();
@@ -82,31 +84,67 @@ public class pointSystem {
                     updateUser(con, first_name, last_name, grad_year, account_hold, active_account);
 
                 }else if(inputNumber == 4){
-                    System.out.println("HI");
-					System.out.print("Point Type................: ");
-                    String point_type = reader.next();
+					System.out.println("Your point types: Informal Meeting");
+					// Note: needs to be hardcoded (for now)
+					// Unfinished, but it works
+                    String point_type = "Informal Meeting";
 					System.out.print("Event Name................: ");
                     String one_time_type_name = reader.next();
 					System.out.print("Event Description.................: ");
                     String one_time_type_description = reader.next();
+					System.out.print("Event Date (Stylized YYYY-MM-DD).................: ");
+                    String one_time_date = reader.next();
 					
-					// Add users to an event
-					Scanner reader = new Scanner(System.in);
-					int userNum = reader.nextInt();
-					while(userNum != 5){
-						// initially add
-						//insert person
-						//until run out
-						// or hits 5 - > back to menu
-						// display names
-						userNum = reader.nextInt();
-					}
-								
+					//Add the event
+					addSingleEvent(con, 0, point_type, one_time_type_name, one_time_type_description, currentSingleId, one_time_date);
 					
-                   
+					//Add users to an event
+					System.out.println("\nAdd Attendees");
+					System.out.print("Enter any key to add attendees or enter q to save event (no attendees): ");
+					Scanner input = new Scanner(System.in);
+					String keepGoing = input.next();
+					 while(!keepGoing.equals("q")){
+						System.out.println("Avaliable users:");
+						try{
+							//Display the users that can be added
+							String q = "SELECT u_id, first_name, last_name FROM Users EXCEPT SELECT u.u_id,u.first_name,u.last_name FROM Users u JOIN Present pr USING(u_id) WHERE pr.one_time_id = ?";
+							PreparedStatement pstmt = con.prepareStatement(q);
+							pstmt.setInt(1,currentSingleId);
+							ResultSet rs = pstmt.executeQuery();
+ 
+							//Pretty print them
+							System.out.println("ID     First Name      Last Name");
+							while(rs.next()){
+								int u_id = rs.getInt("u_id");
+								String first_name = rs.getString("first_name");
+								String last_name = rs.getString("last_name");               
+								System.out.println(u_id + "        " + first_name + "      " + last_name);
 
-                    addSingleEvent(con, currentID, point_type, one_time_type_name, one_time_type_description);
+							}
+							System.out.println();
 
+							rs.close();
+							pstmt.close();
+						}catch(Exception err) {
+							err.printStackTrace();
+						}
+						
+						//Insert user by ID
+						System.out.print("ID of the User You Want to Add................: ");
+						int u_id = reader.nextInt();
+						String q = "INSERT INTO Present VALUES (?,?);";
+						PreparedStatement pstmt = con.prepareStatement(q);
+						pstmt.setInt(1,currentSingleId);
+						pstmt.setInt(2,u_id);
+						pstmt.execute();
+						pstmt.close();
+						
+						//Asks the user if they want to keep adding or return to main screen
+						System.out.print("Enter any key to keep adding and enter q to quit adding: ");
+						keepGoing = input.next();
+					}                  
+
+                    
 
                 }else{
                     System.out.println("Invalid input");
@@ -147,6 +185,54 @@ public class pointSystem {
        }
        return 0;
     }
+	
+	public static int maxSingleID(Connection con){
+        try{
+            Statement stmt = con.createStatement();
+            String q = "SELECT MAX(one_time_id) AS max_id FROM OneTimeOcurrences";
+            ResultSet rs = stmt.executeQuery(q);
+            int one_time_id = 0;
+            
+            while(rs.next()){
+                one_time_id = rs.getInt("max_id");
+            }
+        
+
+            //u_id = rs.getInt("u_id");
+
+            rs.close();
+            stmt.close();
+            return one_time_id;
+
+       }catch(Exception err) {
+           err.printStackTrace();
+       }
+       return 0;
+    }
+	
+	/*public static int maxSingleTypeID(Connection con){
+        try{
+            Statement stmt = con.createStatement();
+            String q = "SELECT MAX(one_time_type_id) AS max_id FROM OneTimeTypes";
+            ResultSet rs = stmt.executeQuery(q);
+            int one_time_type_id = 0;
+            
+            while(rs.next()){
+                one_time_type_id = rs.getInt("max_id");
+            }
+        
+
+            //u_id = rs.getInt("u_id");
+
+            rs.close();
+            stmt.close();
+            return one_time_type_id;
+
+       }catch(Exception err) {
+           err.printStackTrace();
+       }
+       return 0;
+    }*/
 
 
     public static boolean userExists(Connection con, String firstname, String lastname){
@@ -190,9 +276,9 @@ public class pointSystem {
 
     public static boolean singleEventExists(Connection con, String one_type_name){
         try{
-            String q = "SELECT * FROM OneTimeTypes WHERE one_type_name=? ";
+            String q = "SELECT * FROM OneTimeTypes WHERE one_time_type_name=? ";
             PreparedStatement pstmt = con.prepareStatement(q);
-            pstmt.setString(1,one_time_type_name);
+            pstmt.setString(1,one_type_name);
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()){
@@ -297,8 +383,8 @@ public class pointSystem {
         }
     }
 
-    public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description){
-			try{
+    public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description, int one_time_id, String one_time_date){
+			/* try{
             boolean check = singleEventExists(con, one_time_type_name);
             if(check){
                 System.out.println("Event already exists");
@@ -313,6 +399,29 @@ public class pointSystem {
                 pstmt.close();
             }
             System.out.println();
+
+            //Increment one_time_type_id for next user
+            one_time_type_id++;
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        } */
+		
+		try{
+			boolean check = singleEventExists(con, one_time_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+            String q = "INSERT INTO OneTimeOcurrences VALUES (?,?,?)";
+            PreparedStatement pstmt = con.prepareStatement(q);
+            pstmt.setInt(1, one_time_id);
+            pstmt.setString(2, one_time_date);
+            pstmt.setInt(3, one_time_type_id);
+            pstmt.execute();
+            pstmt.close();
+            System.out.println();
+			}
+			
 
             //Increment one_time_type_id for next user
             one_time_type_id++;
