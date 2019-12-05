@@ -35,8 +35,11 @@ public class pointSystem {
             String url = "jdbc:mysql://" + hst + "/" + dab;
             Connection con = DriverManager.getConnection(url, usr, pwd);
 
-            //Global user id value
+            //Global user id value, single event id, and reaccuring id
             int currentID = maxID(con) + 1;
+            int currentSingleId = maxSingleID(con) + 1;
+            int currentMultiId = maxMultiID(con) + 1;
+
 
 
             menu();
@@ -117,6 +120,54 @@ public class pointSystem {
             rs.close();
             stmt.close();
             return u_id;
+
+       }catch(Exception err) {
+           err.printStackTrace();
+       }
+       return 0;
+    }
+
+    public static int maxSingleID(Connection con){
+        try{
+            Statement stmt = con.createStatement();
+            String q = "SELECT MAX(one_time_id) AS max_id FROM OneTimeOccurances";
+            ResultSet rs = stmt.executeQuery(q);
+            int one_time_id = 0;
+            
+            while(rs.next()){
+                one_time_id = rs.getInt("max_id");
+            }
+        
+
+            //u_id = rs.getInt("u_id");
+
+            rs.close();
+            stmt.close();
+            return one_time_id;
+
+       }catch(Exception err) {
+           err.printStackTrace();
+       }
+       return 0;
+    }
+
+    public static int maxMultiID(Connection con){
+        try{
+            Statement stmt = con.createStatement();
+            String q = "SELECT MAX(multi_id) AS max_id FROM MultiOccurances";
+            ResultSet rs = stmt.executeQuery(q);
+            int multi_id = 0;
+            
+            while(rs.next()){
+                multi_id = rs.getInt("max_id");
+            }
+        
+
+            //u_id = rs.getInt("u_id");
+
+            rs.close();
+            stmt.close();
+            return multi_id;
 
        }catch(Exception err) {
            err.printStackTrace();
@@ -251,8 +302,8 @@ public class pointSystem {
 
     public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
         try{
+             boolean check = userExists(con, first_name, last_name);
 
-            boolean check = userExists(con, first_name, last_name);
             if(!check){
                 System.out.println("User does not exist");
             }else{
@@ -288,7 +339,7 @@ public class pointSystem {
                 PreparedStatement pstmt = con.prepareStatement(q);
                 pstmt.setString(1, multi_type_name);
                 pstmt.setString(2, point_type);
-                pstmt.setInt(3, max_points);
+                pstmt.setInt(3, max_points);               
                 pstmt.execute();
                 pstmt.close();
             }
