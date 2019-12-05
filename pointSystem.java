@@ -83,6 +83,30 @@ public class pointSystem {
 
                 }else if(inputNumber == 4){
                     System.out.println("HI");
+					System.out.print("Point Type................: ");
+                    String point_type = reader.next();
+					System.out.print("Event Name................: ");
+                    String one_time_type_name = reader.next();
+					System.out.print("Event Description.................: ");
+                    String one_time_type_description = reader.next();
+					
+					// Add users to an event
+					Scanner reader = new Scanner(System.in);
+					int userNum = reader.nextInt();
+					while(userNum != 5){
+						// initially add
+						//insert person
+						//until run out
+						// or hits 5 - > back to menu
+						// display names
+						userNum = reader.nextInt();
+					}
+								
+					
+                   
+
+                    addSingleEvent(con, currentID, point_type, one_time_type_name, one_time_type_description);
+
 
                 }else{
                     System.out.println("Invalid input");
@@ -274,7 +298,28 @@ public class pointSystem {
     }
 
     public static void addSingleEvent(Connection con, int one_time_type_id, String point_type, String one_time_type_name, String one_time_type_description){
+			try{
+            boolean check = singleEventExists(con, one_time_type_name);
+            if(check){
+                System.out.println("Event already exists");
+            }else{
+                String q = "INSERT INTO OneTimeTypes VALUES (?,?,?,?)";
+                PreparedStatement pstmt = con.prepareStatement(q);
+                pstmt.setInt(1, one_time_type_id);
+                pstmt.setString(2, point_type);
+                pstmt.setString(3, one_time_type_name);
+                pstmt.setString(4, one_time_type_description);
+                pstmt.execute();
+                pstmt.close();
+            }
+            System.out.println();
 
+            //Increment one_time_type_id for next user
+            one_time_type_id++;
+
+        }catch(Exception err) {
+            err.printStackTrace();
+        }
     }
 
 
