@@ -101,7 +101,7 @@ public class pointSystem {
 					
 					//Add users to an event
 					System.out.println("\nAdd Attendees");
-					System.out.print("Enter any key to add attendees or enter q to save event (no attendees): ");
+					System.out.print("Enter any key to continue adding attendees or enter q to save event (no attendees): ");
 					Scanner input = new Scanner(System.in);
 					String keepGoing = input.next();
 					 while(!keepGoing.equals("q")){
@@ -114,12 +114,12 @@ public class pointSystem {
 							ResultSet rs = pstmt.executeQuery();
  
 							//Pretty print them
-							System.out.println("ID     First Name      Last Name");
+							System.out.printf("%5s %20s %20s %n", "ID", "First Name", "Last Name");
 							while(rs.next()){
 								int u_id = rs.getInt("u_id");
 								String first_name = rs.getString("first_name");
 								String last_name = rs.getString("last_name");               
-								System.out.println(u_id + "        " + first_name + "      " + last_name);
+								System.out.printf("%5d %20s %20s %n", u_id, first_name, last_name);
 
 							}
 							System.out.println();
@@ -163,6 +163,7 @@ public class pointSystem {
                 }else if(inputNumber == 7){
                     System.out.print("User ID...................: ");
                     int userID = reader.nextInt();
+                    System.out.println();
                     displayUserBreakdown(con, userID);
     
                 }else if(inputNumber == 8){
@@ -194,10 +195,7 @@ public class pointSystem {
             while(rs.next()){
                 u_id = rs.getInt("max_id");
             }
-        
-
-            //u_id = rs.getInt("u_id");
-
+    
             rs.close();
             stmt.close();
             return u_id;
@@ -218,9 +216,6 @@ public class pointSystem {
             while(rs.next()){
                 one_time_id = rs.getInt("max_id");
             }
-        
-
-            //u_id = rs.getInt("u_id");
 
             rs.close();
             stmt.close();
@@ -242,8 +237,6 @@ public class pointSystem {
             while(rs.next()){
                 multi_id = rs.getInt("max_id");
             }
-        
-
             //u_id = rs.getInt("u_id");
 
             rs.close();
@@ -283,13 +276,11 @@ public class pointSystem {
             PreparedStatement pstmt = con.prepareStatement(q);
             pstmt.setString(1,multi_type_name);
             ResultSet rs = pstmt.executeQuery();
-
             if(rs.next()){
                 rs.close();//Close rs before return
                 pstmt.close();//close pstmt before return
                 return true;
             }
-
         }catch(Exception err) {
             err.printStackTrace();
         }
@@ -308,7 +299,6 @@ public class pointSystem {
                 pstmt.close();//close pstmt before return
                 return true;
             }
-
         }catch(Exception err) {
             err.printStackTrace();
         }
@@ -320,37 +310,37 @@ public class pointSystem {
         System.out.println("1. List Users");
         System.out.println("2. Add New User");
         System.out.println("3. Update User");
-        System.out.println("4. Add Single Event");
+        System.out.println("4. Add Single Event Instance");
         System.out.println("5. Add New Recurring Event Type");
-        System.out.println("6. Add Recurring Event Value");
-        System.out.println("7. Display User Breakdown");
-        System.out.println("8. Display Point Totals");
-        System.out.print("Enter your choice (1-5): ");
+        System.out.println("6. Add a Recurring Event Instance");
+        System.out.println("7. Display an Indivdual User's Breakdown");
+        System.out.println("8. Display All Users Point Totals");
+        System.out.println("9. Quit");
+        System.out.print("Enter your choice (1-9): \n");
     }
 
     public static void listUsers(Connection con){
         try{
-             //print table of countries
-             Statement stmt = con.createStatement();
-             String q = "SELECT * FROM Users";
-             ResultSet rs = stmt.executeQuery(q);
-            
-             System.out.println("ID     First Name      Last Name       Grad Year       Account Hold        Active");
-             while(rs.next()){
-                 int u_id = rs.getInt("u_id");
-                 String first_name = rs.getString("first_name");
-                 String last_name = rs.getString("last_name");
-                 int grad_year = rs.getInt("grad_year");
-                 boolean account_hold = rs.getBoolean("account_hold");
-                 boolean active = rs.getBoolean("active");
+            //print table of countries
+            Statement stmt = con.createStatement();
+            String q = "SELECT * FROM Users";
+            ResultSet rs = stmt.executeQuery(q);
+            System.out.println("\nCurrent Users:");
+            System.out.printf("%5s %15s %15s %15s %15s %12s %n", "ID", "First Name","Last Name","Grad Year", "Account Hold", "Active");
+            while(rs.next()){
+                int u_id = rs.getInt("u_id");
+                String first_name = rs.getString("first_name");
+                String last_name = rs.getString("last_name");
+                int grad_year = rs.getInt("grad_year");
+                boolean account_hold = rs.getBoolean("account_hold");
+                boolean active = rs.getBoolean("active");
 
-                 System.out.println(u_id + "        " + first_name + "      " + last_name + "       " + grad_year + "       " + account_hold + "        " + active);
+                System.out.printf("%5d %15s %15s %15d %15b %12b %n", u_id,first_name, last_name, grad_year, account_hold, active);
+            }
+            System.out.println();
 
-             }
-             System.out.println();
-
-             rs.close();
-             stmt.close();
+            rs.close();
+            stmt.close();
 
         }catch(Exception err) {
             err.printStackTrace();
@@ -373,6 +363,7 @@ public class pointSystem {
                 pstmt.setBoolean(6,true);
                 pstmt.execute();
                 pstmt.close();
+                System.out.println("\nUser Succesfully Added!");
             }
             System.out.println();
 
@@ -386,10 +377,10 @@ public class pointSystem {
 
     public static void updateUser(Connection con, String first_name, String last_name, int grad_year, boolean account_hold, boolean active ){
         try{
-             boolean check = userExists(con, first_name, last_name);
+            boolean check = userExists(con, first_name, last_name);
 
             if(!check){
-                System.out.println("User does not exist");
+                System.out.println("\nUser does not exist");
             }else{
                 String q = "UPDATE Users SET grad_year=?, account_hold=?, active=? WHERE first_name=? AND last_name=?";
                 PreparedStatement pstmt = con.prepareStatement(q);
@@ -400,6 +391,8 @@ public class pointSystem {
                 pstmt.setString(5,last_name);
                 pstmt.execute();
                 pstmt.close();
+                System.out.println("\nUser Succesfully Updated!");
+
             }
             System.out.println();
             
@@ -444,8 +437,6 @@ public class pointSystem {
             pstmt.close();
             System.out.println();
 			}
-			
-
             //Increment one_time_type_id for next user
             one_time_type_id++;
 
@@ -455,10 +446,8 @@ public class pointSystem {
     }
 
 
-    public static void addRecurringEvent(Connection con, String multi_type_name, String point_type, int max_points){
-        
+    public static void addRecurringEvent(Connection con, String multi_type_name, String point_type, int max_points){ 
         try{
-            
             boolean check = multiEventExists(con, multi_type_name);
             if(check){
                 System.out.println("Event already exists");
@@ -480,7 +469,6 @@ public class pointSystem {
     
    public static void addRecurringValue(Connection con, int multi_id){
         try{
-
              //print table of Reaccuring Events
              Statement stmt = con.createStatement();
              String q = "SELECT * FROM MultiType";
@@ -530,22 +518,16 @@ public class pointSystem {
                 pstmt.close();
             }
             multi_id++;
-
-
-
-
-
-
             reader.close();
-             rs.close();
-             stmt.close();
+            rs.close();
+            stmt.close();
 
         }catch(Exception err) {
             err.printStackTrace();
         }
-   }
+    }
 
-       public static void displayUserBreakdown(Connection con, int userID){
+    public static void displayUserBreakdown(Connection con, int userID){
         try{
             boolean check = true;
             if(!check){
@@ -567,16 +549,15 @@ public class pointSystem {
                 pstmt.setInt(1, userID);
                 pstmt.setInt(2, userID);   
                 ResultSet rs = pstmt.executeQuery();
-                System.out.println("Event               Date              Points");
+                System.out.println("User's Breakdown:");
+                System.out.printf("%20s %15s %12s %n", "Event", "Date", "Points");
                 while(rs.next()){
                     String ott = rs.getString("one_time_type_name");
                     String date = rs.getString("one_time_date");
                     double points = rs.getDouble("point_value");
-                    System.out.println(ott + "   "+ date + "        " + points );
+                    System.out.printf("%20s %15s %12f %n", ott, date, points );
 
                 }
-
-
                 pstmt.close();
             }
             System.out.println();
@@ -587,37 +568,38 @@ public class pointSystem {
     }
     public static void displayPointTotals(Connection con){
         try{
-             //print table of countries
-             Statement stmt = con.createStatement();
-             String q = "SELECT firstName, lastName, SUM(points) AS totalPoints "+
-             "FROM "+
-             "(SELECT u.first_name as firstName, u.last_name as lastName, SUM(p.point_value) AS points  "+
-             "FROM Users u  JOIN Present pr USING(u_id) "+
-                 "JOIN OneTimeOcurrences oto USING(one_time_id) "+
-                 "JOIN OneTimeTypes ott USING(one_time_type_id) "+
-                 "JOIN PointValues p USING(point_type) "+
-             "GROUP BY u.u_id "+
-             "UNION ALL  "+
-             "SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount) AS points "+
-             "FROM Users u JOIN MultiOccurences mo USING(u_id) "+
-                 "JOIN MultiType mt USING(multi_type_name) "+
-                 "JOIN PointValues p USING(point_type) "+
-             "GROUP BY u.u_id) as temp "+
-             "GROUP BY firstName, lastName;";
-             ResultSet rs = stmt.executeQuery(q);
-             System.out.println("First Name      Last Name       Points ");
- 
-             while(rs.next()){
-                 String first_name = rs.getString("firstName");
-                 String last_name = rs.getString("lastName");
-                 double points = rs.getDouble("totalPoints");
-                 System.out.println(first_name + "          " + last_name + "         " + points);
+            //print table of countries
+            Statement stmt = con.createStatement();
+            String q = "SELECT firstName, lastName, SUM(points) AS totalPoints "+
+            "FROM "+
+            "(SELECT u.first_name as firstName, u.last_name as lastName, SUM(p.point_value) AS points  "+
+            "FROM Users u  JOIN Present pr USING(u_id) "+
+                "JOIN OneTimeOcurrences oto USING(one_time_id) "+
+                "JOIN OneTimeTypes ott USING(one_time_type_id) "+
+                "JOIN PointValues p USING(point_type) "+
+            "GROUP BY u.u_id "+
+            "UNION ALL  "+
+            "SELECT u.first_name, u.last_name, SUM(p.point_value * mo.multi_amount) AS points "+
+            "FROM Users u JOIN MultiOccurences mo USING(u_id) "+
+                "JOIN MultiType mt USING(multi_type_name) "+
+                "JOIN PointValues p USING(point_type) "+
+            "GROUP BY u.u_id) as temp "+
+            "GROUP BY firstName, lastName;";
+            ResultSet rs = stmt.executeQuery(q);
+            System.out.println("Point Totals:");
+            System.out.printf("%20s %20s %12s %n","First Name","Last Name", "Points");
 
-             }
-             System.out.println();
+            while(rs.next()){
+                String first_name = rs.getString("firstName");
+                String last_name = rs.getString("lastName");
+                double points = rs.getDouble("totalPoints");
+                System.out.printf("%20s %20s %12f %n",first_name, last_name, points);
 
-             rs.close();
-             stmt.close();
+            }
+            System.out.println();
+
+            rs.close();
+            stmt.close();
 
         }catch(Exception err) {
             err.printStackTrace();
